@@ -7,9 +7,10 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        TrackingBox testBox = new TrackingBox(10, 10, 40, 40, 255, 255, 0);
+        TrackingBox testBox = new TrackingBox(190, 190, 200, 200, 255, 255, 0);
         List<TrackingBox> boxes = new List<TrackingBox>();
         boxes.Add(testBox);
+        Byte targetR = 110, targetG = 150, targetB = 110;
 
         CvInvoke.NamedWindow("test");
         using (Mat frame = new Mat())
@@ -21,9 +22,10 @@ public class Program
                 Image<Bgr, Byte> img = frame.ToImage<Bgr, Byte>();
 
 
-                //-----DRAW BOXES-----//
+
                 foreach (TrackingBox box in boxes)
                 {
+                    //-----DRAW BOXES-----//
                     for (int x = box.topLeft.x; x < box.bottomRight.x; x++)
                     {
                         img.Data[x, box.topLeft.y, 0] = box.b;
@@ -42,10 +44,21 @@ public class Program
                         img.Data[box.topLeft.x, y, 2] = box.r;
                         img.Data[box.bottomRight.x, y, 2] = box.r;
                     }
+
+                    //tracking
+                    for (int x = box.topLeft.x; x < box.bottomRight.x; x++)
+                    {
+                        for (int y = box.topLeft.y; y < box.bottomRight.y; y++)
+                        {
+                            double rDifference = img.Data[y, x, 2] - targetR;
+                            double gDifference = img.Data[y, x, 1] - targetG;
+                            double bDifference = img.Data[y, x, 0] - targetB;
+                            double colorDistance = rDifference*rDifference * 0.3 + gDifference*gDifference * 0.59 + bDifference*bDifference * 0.11;
+                            img[y, x] = new Bgr(colorDistance, colorDistance, colorDistance);
+                            Console.WriteLine(colorDistance);   
+                        }
+                    }
                 }
-
-                //-----Tracking inside boxes-----
-
 
                 CvInvoke.Imshow("test", img);
             }
