@@ -40,9 +40,9 @@ public class Program
                         img.Data[box.topLeft.x, y, 2] = 255;
                         img.Data[box.bottomRight.x, y, 2] = 255;
                     }
-
-                    CvInvoke.Imshow("test", img);
                 }
+
+                CvInvoke.Imshow("test", img);
             }
     }
 
