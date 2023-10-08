@@ -53,18 +53,13 @@ public class Program
                     {
                         for (int y = box.y - box.radius + 1; y < box.y + box.radius; y++)
                         {
-                            
                             double pixelLuminance = 0.2126 * img.Data[x, y, 2] + 0.7152 * img.Data[x, y, 1] + 0.0722 * img.Data[x, y, 0];
 
                             if(pixelLuminance > cutoff)
                             {
                                 xList.Add(x);
                                 yList.Add(y);
-                                img[x, y] = new Bgr(pixelLuminance, pixelLuminance, pixelLuminance);
-                            }
-                            else
-                            {
-                                img[x, y] = new Bgr(0.0, 0.0, 0.0);
+                                img.Data[x, y, 0] = 0;
                             }
                         }
                     }
@@ -85,7 +80,6 @@ public class Program
                     box.x = medianX; box.y = medianY;
 
                     img[medianX, medianY] = new Bgr(0.0, 0.0, 255.0);
-                    Console.WriteLine(medianX + " " + medianY);
                 }
                 CvInvoke.Imshow("test", img);
             }
