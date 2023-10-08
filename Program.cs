@@ -24,14 +24,34 @@ public class Program
 
                 foreach (TrackingBox box in boxes)
                 {
+                    //-----DRAW BOXES-----//
+                    for (int x = box.x - box.radius; x < box.x + box.radius; x++)
+                    {
+                        img.Data[x, box.y + box.radius, 0] = box.b;
+                        img.Data[x, box.y - box.radius, 0] = box.b;
+                        img.Data[x, box.y + box.radius, 1] = box.g;
+                        img.Data[x, box.y - box.radius, 1] = box.g;
+                        img.Data[x, box.y + box.radius, 2] = box.r;
+                        img.Data[x, box.y - box.radius, 2] = box.r;
+                    }
+                    for (int y = box.y - box.radius; y < box.y + box.radius; y++)
+                    {
+                        img.Data[box.x + box.radius, y, 0] = box.b;
+                        img.Data[box.x - box.radius, y, 0] = box.b;
+                        img.Data[box.x + box.radius, y, 1] = box.g;
+                        img.Data[box.x - box.radius, y, 1] = box.g;
+                        img.Data[box.x + box.radius, y, 2] = box.r;
+                        img.Data[box.x - box.radius, y, 2] = box.r;
+                    }
+
                     //find median of circle inside tracking feature
                     List<int> yList = new List<int>(); //lists are used to find medians.
                     List<int> xList = new List<int>(); //there's probably a better way but idk
                     int medianX = 0, medianY = 0;
                     int numX = 0, numY = 0;
-                    for (int x = box.x - box.radius; x < box.x + box.radius; x++)
+                    for (int x = box.x - box.radius + 1; x < box.x + box.radius; x++)
                     {
-                        for (int y = box.y - box.radius; y < box.y + box.radius; y++)
+                        for (int y = box.y - box.radius + 1; y < box.y + box.radius; y++)
                         {
                             
                             double pixelLuminance = 0.2126 * img.Data[x, y, 2] + 0.7152 * img.Data[x, y, 1] + 0.0722 * img.Data[x, y, 0];
@@ -66,26 +86,6 @@ public class Program
 
                     img[medianX, medianY] = new Bgr(0.0, 0.0, 255.0);
                     Console.WriteLine(medianX + " " + medianY);
-
-                    //-----DRAW BOXES-----//
-                    for (int x = box.x - box.radius; x < box.x + box.radius; x++)
-                    {
-                        img.Data[x, box.y + box.radius, 0] = box.b;
-                        img.Data[x, box.y - box.radius, 0] = box.b;
-                        img.Data[x, box.y + box.radius, 1] = box.g;
-                        img.Data[x, box.y - box.radius, 1] = box.g;
-                        img.Data[x, box.y + box.radius, 2] = box.r;
-                        img.Data[x, box.y - box.radius, 2] = box.r;
-                    }
-                    for (int y = box.y - box.radius; y < box.y + box.radius; y++)
-                    {
-                        img.Data[box.x + box.radius, y, 0] = box.b;
-                        img.Data[box.x - box.radius, y, 0] = box.b;
-                        img.Data[box.x + box.radius, y, 1] = box.g;
-                        img.Data[box.x - box.radius, y, 1] = box.g;
-                        img.Data[box.x + box.radius, y, 2] = box.r;
-                        img.Data[box.x - box.radius, y, 2] = box.r;
-                    }
                 }
                 CvInvoke.Imshow("test", img);
             }
