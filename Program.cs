@@ -30,28 +30,30 @@ public class Program
                 Image<Bgr, Byte> img = frame.ToImage<Bgr, Byte>();
                 Image<Bgr, Byte> img2 = frame2.ToImage<Bgr, Byte>();
 
-                Console.WriteLine(boxes[0].x);
                 Parallel.For(0, boxes.Count, i =>
                 {
+                    //move this to its own function so you can change which img it uses
+                    Image<Bgr, Byte> activeImg = img;
+
                     TrackingBox box = boxes[i];
                     //-----DRAW BOXES-----//
                     for (int x = box.x - box.radius; x < box.x + box.radius; x++)
                     {
-                        img.Data[x, box.y + box.radius, 0] = box.b;
-                        img.Data[x, box.y - box.radius, 0] = box.b;
-                        img.Data[x, box.y + box.radius, 1] = box.g;
-                        img.Data[x, box.y - box.radius, 1] = box.g;
-                        img.Data[x, box.y + box.radius, 2] = box.r;
-                        img.Data[x, box.y - box.radius, 2] = box.r;
+                        activeImg.Data[x, box.y + box.radius, 0] = box.b;
+                        activeImg.Data[x, box.y - box.radius, 0] = box.b;
+                        activeImg.Data[x, box.y + box.radius, 1] = box.g;
+                        activeImg.Data[x, box.y - box.radius, 1] = box.g;
+                        activeImg.Data[x, box.y + box.radius, 2] = box.r;
+                        activeImg.Data[x, box.y - box.radius, 2] = box.r;
                     }
                     for (int y = box.y - box.radius; y < box.y + box.radius; y++)
                     {
-                        img.Data[box.x + box.radius, y, 0] = box.b;
-                        img.Data[box.x - box.radius, y, 0] = box.b;
-                        img.Data[box.x + box.radius, y, 1] = box.g;
-                        img.Data[box.x - box.radius, y, 1] = box.g;
-                        img.Data[box.x + box.radius, y, 2] = box.r;
-                        img.Data[box.x - box.radius, y, 2] = box.r;
+                        activeImg.Data[box.x + box.radius, y, 0] = box.b;
+                        activeImg.Data[box.x - box.radius, y, 0] = box.b;
+                        activeImg.Data[box.x + box.radius, y, 1] = box.g;
+                        activeImg.Data[box.x - box.radius, y, 1] = box.g;
+                        activeImg.Data[box.x + box.radius, y, 2] = box.r;
+                        activeImg.Data[box.x - box.radius, y, 2] = box.r;
                     }
 
                     //find median of circle inside tracking feature
@@ -63,13 +65,13 @@ public class Program
                     {
                         for (int y = box.y - box.radius + 1; y < box.y + box.radius; y++)
                         {
-                            double pixelLuminance = 0.2126 * img.Data[x, y, 2] + 0.7152 * img.Data[x, y, 1] + 0.0722 * img.Data[x, y, 0];
+                            double pixelLuminance = 0.2126 * activeImg.Data[x, y, 2] + 0.7152 * activeImg.Data[x, y, 1] + 0.0722 * activeImg.Data[x, y, 0];
 
                             if (pixelLuminance > cutoff)
                             {
                                 xList.Add(x);
                                 yList.Add(y);
-                                img.Data[x, y, 0] = 0;
+                                activeImg.Data[x, y, 0] = 0;
                             }
                         }
                     }
@@ -89,10 +91,12 @@ public class Program
 
                     box.x = medianX; box.y = medianY;
 
-                    img[medianX, medianY] = new Bgr(0.0, 0.0, 255.0);
+                    activeImg[medianX, medianY] = new Bgr(0.0, 0.0, 255.0);
                 });
 
                 CvInvoke.Imshow("test", img);
+                img.Dispose();
+                img2.Dispose();
             }
     }
 }
