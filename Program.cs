@@ -2,21 +2,31 @@
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System.Collections;
-using System.ComponentModel;
-using System.Threading;
-using System.Threading.Tasks;
 public class Program
 {
     public static void Main(string[] args)
     {
         //----Parameters----
+        //camera settings
         int leftCameraIndex = 0; //these are almost CERTAINLY not the same for your system
         int rightCameraIndex = 1;
-        double cutoff = 200;
+        double cameraFOV = 52.0;
+        double distanceBetweenCameras = 6.73; //cm
+        double imgWidth = 640;
+
+        //other settings
+        double cutoff = 240;
 
         List<TrackingBox> boxes = new List<TrackingBox>();
-        TrackingBox test = new TrackingBox(120, 120, 30, 255, 255, 0);
+        TrackingBox test = new TrackingBox(120, 120, 30, 255, 255, 0, "test");
+        TrackingBox test2 = new TrackingBox(120, 120, 30, 255, 255, 0, "test");
         boxes.Add(test);
+        boxes.Add(test2);
+
+        StereoTrackingBoxes testboxes = new StereoTrackingBoxes(test, test2);
+
+        Dictionary<string, StereoTrackingBoxes> trackingBoxLookup = new Dictionary<string, StereoTrackingBoxes>();
+        trackingBoxLookup.Add(testboxes.left.tag, testboxes);
 
         CvInvoke.NamedWindow("test");
         using (Mat frame = new Mat())
@@ -32,8 +42,7 @@ public class Program
 
                 Parallel.For(0, boxes.Count, i =>
                 {
-                    //move this to its own function so you can change which img it uses
-                    Image<Bgr, Byte> activeImg = img;
+                    Image<Bgr, Byte> activeImg = i % 2 == 0 ? img : img2;
 
                     TrackingBox box = boxes[i];
                     //-----DRAW BOXES-----//
@@ -94,10 +103,32 @@ public class Program
                     activeImg[medianX, medianY] = new Bgr(0.0, 0.0, 255.0);
                 });
 
+                Parallel.For(0, boxes.Count >> 1, i =>
+                {
+                    StereoTrackingBoxes currentBoxes = trackingBoxLookup[boxes[i * 2].tag];
+
+                    //https://www.csfieldguide.org.nz/en/chapters/computer-vision/depth/ used this to calculate the depth
+                    currentBoxes.depth = (distanceBetweenCameras * imgWidth) / (2 * Math.Tan(cameraFOV / 2) * (currentBoxes.left.x - currentBoxes.right.x));
+                    Console.WriteLine(currentBoxes.depth);
+                });
+
                 CvInvoke.Imshow("test", img);
                 img.Dispose();
                 img2.Dispose();
             }
+    }
+
+    public struct StereoTrackingBoxes
+    {
+        public TrackingBox left, right;
+        public double depth;
+
+        public StereoTrackingBoxes(TrackingBox left, TrackingBox right)
+        {
+            this.left = left;
+            this.right = right;
+            this.depth = 0.0;
+        }
     }
 }
 
@@ -107,8 +138,9 @@ public class TrackingBox
     public int radius;
 
     public Byte r, g, b;
+    public string tag;
 
-    public TrackingBox(int x, int y, int radius, byte r, byte g, byte b)
+    public TrackingBox(int x, int y, int radius, byte r, byte g, byte b, string tag)
     {
         this.x = x;
         this.y = y;
@@ -116,5 +148,6 @@ public class TrackingBox
         this.r = r;
         this.g = g;
         this.b = b;
+        this.tag = tag;
     }
 }
