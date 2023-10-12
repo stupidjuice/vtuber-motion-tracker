@@ -28,7 +28,8 @@ public class Program
         Dictionary<string, StereoTrackingBoxes> trackingBoxLookup = new Dictionary<string, StereoTrackingBoxes>();
         trackingBoxLookup.Add(testboxes.left.tag, testboxes);
 
-        CvInvoke.NamedWindow("test");
+        CvInvoke.NamedWindow("left");
+        CvInvoke.NamedWindow("right");
         using (Mat frame = new Mat())
         using (Mat frame2 = new Mat())
         using (VideoCapture capture = new VideoCapture(leftCameraIndex))
@@ -112,7 +113,8 @@ public class Program
                     Console.WriteLine(currentBoxes.depth);
                 });
 
-                CvInvoke.Imshow("test", img);
+                CvInvoke.Imshow("left", img);
+                CvInvoke.Imshow("right", img2);
                 img.Dispose();
                 img2.Dispose();
             }
